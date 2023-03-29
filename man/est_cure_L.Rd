@@ -56,10 +56,8 @@ By default new.x_value = NULL.}
 \item{no_cores}{the number of cores used during the estimation. The default is 7.}
 }
 \value{
-a data.frame with id of all patients who are still at risk at time \eqn{L} and predicted conditional probabilities of being
-cured at time \eqn{L} when predict.id="all". a list containing patient id and this patient's predicted conditional probability of be cured
-at time \eqn{L} when predict.id="one". a scalar of predicted conditional probability of be cured at time \eqn{L}  for
-the specified new patient when predict.id="new".
+a data.frame with id for the predicted patients who are still at risk at time \eqn{L} and predicted conditional probabilities of being
+cured at time \eqn{L}.
 }
 \description{
 Predicts an individual's the conditional probability of being cured at landmark time \eqn{L}

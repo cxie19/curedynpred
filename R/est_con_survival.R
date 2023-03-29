@@ -149,11 +149,11 @@ est_con_survival <- function(L,
         survival_thorL <- exp(-exp(matrix(c(1,ind_dat[1,beta_variable],X),nrow=1)%*%matrix(est[,which(grepl("beta_",colnames(est)))],ncol=1))*
                                 (F0L_hor))
       }else{
-        survival_Lhor <- exp(-exp(matrix(c(1,ind_dat[1,beta_variable],X),nrow=1)%*%matrix(est[,which(grepl("beta_",colnames(est)))],ncol=1))*
+        survival_thorL <- exp(-exp(matrix(c(1,ind_dat[1,beta_variable],X),nrow=1)%*%matrix(est[,which(grepl("beta_",colnames(est)))],ncol=1))*
                                (F0L_hor)^(exp(matrix(ind_dat[1,gamma_variable],nrow=1)%*%matrix(est[,which(grepl("gamma_",colnames(est)))],ncol=1))))
       }
 
-      return(G_b*survival_Lhor*f)
+      return(G_b*survival_thorL*f)
     }
 
     # denominator of the computation for the estimated cure rate for a subject at a pre-specified time point
@@ -363,7 +363,11 @@ est_con_survival <- function(L,
     new.baseline.matrix <- matrix(c(new.baseline_value_lmm,new.z_value,new.x_value),ncol=length(c(new.baseline_value_lmm,new.z_value,new.x_value)),nrow=nrow(new.fu.matrix))
     new.variable <- cbind(new.fu.matrix,new.baseline.matrix)
     colnames(new.variable) <- c(fu_measure,fu_time_variable,baseline_var_lmm,beta_variable,gamma_variable)
-    ind_dat <- as.data.frame(new.variable[,-which(duplicated(colnames(new.variable)))])
+    if(sum(duplicated(colnames(new.variable)))!=0){
+      ind_dat <- as.data.frame(new.variable[,-which(duplicated(colnames(new.variable)))])
+    }else{
+      ind_dat <-as.data.frame(new.variable)
+    }
     compute <- compute_surv()
     new_survival <- data.frame(id="new",con_surv=compute)
 

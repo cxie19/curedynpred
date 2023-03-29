@@ -29,10 +29,8 @@
 #' @param object an object of jmfhc_point_est() function.
 #' @param no_cores the number of cores used during the estimation. The default is 7.
 #'
-#' @return a data.frame with id of all patients who are still at risk at time \eqn{L} and predicted conditional probabilities of being
-#' cured at time \eqn{L} when predict.id="all". a list containing patient id and this patient's predicted conditional probability of be cured
-#' at time \eqn{L} when predict.id="one". a scalar of predicted conditional probability of be cured at time \eqn{L}  for
-#' the specified new patient when predict.id="new".
+#' @return a data.frame with id for the predicted patients who are still at risk at time \eqn{L} and predicted conditional probabilities of being
+#' cured at time \eqn{L}.
 #' @export
 #'
 #' @examples
@@ -259,8 +257,8 @@ est_cure_L <- function(L,
       return(c(i,compute))
     }
     stopCluster(cl)
-    cure <- data.frame(id=cure[,1],con_cure=cure[,2])
-    return(cure)
+    all_cure <- data.frame(id=cure[,1],con_cure=cure[,2])
+    return(all_cure)
   }else if(predict.id=="one"){
     ind_dat <- landmark_dat[landmark_dat[,id]==predict.id.one,]
     compute <- compute_cure()
@@ -271,8 +269,13 @@ est_cure_L <- function(L,
     new.baseline.matrix <- matrix(c(new.baseline_value_lmm,new.z_value,new.x_value),ncol=length(c(new.baseline_value_lmm,new.z_value,new.x_value)),nrow=nrow(new.fu.matrix))
     new.variable <- cbind(new.fu.matrix,new.baseline.matrix)
     colnames(new.variable) <- c(fu_measure,fu_time_variable,baseline_var_lmm,beta_variable,gamma_variable)
-    ind_dat <- as.data.frame(new.variable[,-which(duplicated(colnames(new.variable)))])
+    if(sum(duplicated(colnames(new.variable)))!=0){
+      ind_dat <- as.data.frame(new.variable[,-which(duplicated(colnames(new.variable)))])
+    }else{
+      ind_dat <-as.data.frame(new.variable)
+    }
     compute <- compute_cure()
-    return(compute)
+    new_cure <- data.frame(id="new",con_cure=compute)
+    return(new_cure)
   }
 }
