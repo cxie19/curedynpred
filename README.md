@@ -20,12 +20,12 @@ devtools::install_github("cxie19/curedynpred")
 library(curedynpred)
 ```
 
-An example data set called *long_dat* is provided in this package. It
+An example data set called *longdat* is provided in this package. It
 is a longitudinal and cure-survival data set. Its documentation can be 
 seen by using the following command.
 
 ```{r}
-help(long_dat)
+help(longdat)
 ```
 
 The function *est_cure_L* is called to predicts individual conditional probability of being cured at a landmark time.
