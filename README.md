@@ -68,15 +68,42 @@ The point estimation could be found as a file called jmfhc_estresult.rds.
 To predict conditional cure rates at 10 months for all patients who are still at risk at 10 months, we call the function *est_cure_L*.
 
 ```{r}
-predict_cure <- est_cure_L(L=10,predict.id="all",object=result_jmfhc)
+predict_cure_all <- est_cure_L(L=10,predict.id="all",object=result_jmfhc)
 ```
 
 To predict all patients' conditional probability of not experiencing the event of interest in an additional 5 months 
 given that the patient remains risk-free at least 10 months, we call the function *est_con_survival*. We also compute the AUC 
-and Brier score.
+and Brier score to evaluate the predictive performance of the fitting JMFHC.
 
 ```{r}
-predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="all",AUC=TRUE,Brier=TRUE,object=result_jmfhc)
+predict_surv_all <- est_con_survival(L=10,t_hor=5,predict.id="all",AUC=TRUE,Brier=TRUE,object=result_jmfhc)
 ```
 
+Our functions *est_cure_L* and *est_con_survival* can also predict the conditional cure rate and conditional survival probability for a specific patient
+who is still at risk at the landmark time 10 months.
+
+```{r}
+predict_cure_one <- est_cure_L(L=10,predict.id="one",predict.id.one=3,object=result_jmfhc)
+predict_surv_one <- est_con_survival(L=10,t_hor=5,predict.id="one",predict.id.one=3,AUC=FALSE,Brier=FALSE,object=result_jmfhc)
+```
+
+In addition, we can predict the conditional cure rate and conditional survival probability for a new patient.
+
+```{r}
+predict_cure_new <- est_cure_L(L=10,predict.id="new",
+                           new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+                           new.fu_time_variable= 0:10,
+                           new.baseline_value_lmm=NULL,
+                           new.z_value=0,
+                           new.x_value=0,
+                           object=result_jmfhc)
+predict_surv_new <- est_con_survival(L=10,t_hor=5,predict.id="new",
+                                 new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+                                 new.fu_time_variable= 0:10,
+                                 new.baseline_value_lmm=NULL,
+                                 new.z_value=0,
+                                 new.x_value=0,
+                                 AUC=FALSE,Brier=FALSE,
+                                 object=result_jmfhc)
+```
 
