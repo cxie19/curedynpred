@@ -41,13 +41,15 @@ the elements in new.fu_time_variable is placed in the order of variables in the 
 By default new.fu_time_variable = NULL.}
 
 \item{new.baseline_value_lmm}{value(s) of the baseline covariate(s) in the order specified for the parameter baseline_var_lmm in the fitted
-longitudinal submodel of jmfhc_point_est() when predict.id="new". By default new.baseline_value_lmm = NULL.}
+longitudinal submodel of jmfhc_point_est() when predict.id="new". When the baseline_var_lmm=NULL in jmfhc_point_est(), new.baseline_value_lmm
+can be set as NULL. By default new.baseline_value_lmm = NULL.}
 
 \item{new.z_value}{value(s) of the long-term baseline covariate(s) in the order specified for the parameter beta_variable in the fitted
 cure submodel of jmfhc_point_est() when predict.id="new". By default new.z_value = NULL.}
 
 \item{new.x_value}{value(s) of the short-term baseline covariate(s) in the order specified for the parameter gamma_variable in the fitted
-cure submodel of jmfhc_point_est() when predict.id="new". By default new.x_value = NULL.}
+cure submodel of jmfhc_point_est() when predict.id="new". When the gamma_variable=NULL in jmfhc_point_est(), new.x_value can be set as NULL.
+By default new.x_value = NULL.}
 
 \item{object}{an object of jmfhc_point_est() function.}
 
@@ -68,7 +70,6 @@ result_jmfhc <- jmfhc::jmfhc_point_est(data=longdat,
                                id="patient.id",beta_variable="trt", gamma_variable="trt",
                                fu_measure="measure", fu_time_original="mes.times",
                                fu_time_variable="mes.times")
-result_jmfhc <- readRDS("C:\\\\Users\\\\cxie1\\\\OneDrive - mdanderson.org\\\\Documents\\\\GRA\\\\JMFHC_dynamic prediction\\\\curedynpred\\\\jmfhc_estresult.rds")
 predict_cure <- est_cure_L(L=10,predict.id="all",object=result_jmfhc)
 predict_cure <- est_cure_L(L=10,predict.id="one",predict.id.one=3,object=result_jmfhc)
 predict_cure <- est_cure_L(L=10,predict.id="new",

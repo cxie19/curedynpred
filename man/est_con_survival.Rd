@@ -47,13 +47,15 @@ the elements in new.fu_time_variable is placed in the order of variables in the 
 By default new.fu_time_variable = NULL.}
 
 \item{new.baseline_value_lmm}{value(s) of the baseline covariate(s) in the order specified for the parameter baseline_var_lmm in the fitted
-longitudinal submodel of jmfhc_point_est() when predict.id="new". By default new.baseline_value_lmm = NULL.}
+longitudinal submodel of jmfhc_point_est() when predict.id="new". When the baseline_var_lmm=NULL in jmfhc_point_est(), new.baseline_value_lmm
+can be set as NULL. By default new.baseline_value_lmm = NULL.}
 
 \item{new.z_value}{value(s) of the long-term baseline covariate(s) in the order specified for the parameter beta_variable in the fitted
 cure submodel of jmfhc_point_est() when predict.id="new". By default new.z_value = NULL.}
 
 \item{new.x_value}{value(s) of the short-term baseline covariate(s) in the order specified for the parameter gamma_variable in the fitted
-cure submodel of jmfhc_point_est() when predict.id="new". By default new.x_value = NULL.}
+cure submodel of jmfhc_point_est() when predict.id="new". When the gamma_variable=NULL in jmfhc_point_est(), new.x_value can be set as NULL.
+By default new.x_value = NULL.}
 
 \item{AUC}{a logical value (True or False) to determine whether to evaluate the AUC. By default AUC=FALSE.}
 
