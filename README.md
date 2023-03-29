@@ -53,7 +53,7 @@ covariate and treatment as the short- and long-term covariate in the cure
 submodel. These two submodels share individual random effects.
 The time unit for the time related variables is month.
 
-We call the function *jmfhc_point_est* for point estimation from the R package cxie219/jmfhc, and the following command is used.
+We call the function *jmfhc_point_est* for point estimation from the R package cxie19/jmfhc, and the following command is used.
 
 ```{r}
 result_coef <- jmfhc_point_est(data=jmfhc_dat, 
