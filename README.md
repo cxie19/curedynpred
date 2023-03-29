@@ -1,5 +1,5 @@
 # curedynpred
-Perform individual dynamic prediction on cure and survival
+
 curedynpred is an R package to predict individual conditional cure rates and conditional 
 survival probabilities. It can also evaluate the fitted joint model's predictive performance 
 on conditional survival probabilities via the time-dependent area under 
@@ -60,7 +60,8 @@ result_coef <- jmfhc_point_est(data=jmfhc_dat,
                                event_time="event.time", event_status="event", 
                                id="patient.id", 
                                beta_variable="trt", gamma_variable="trt", 
-                               fu_measure="measure", fu_time_original="mes.times",                                        fu_time_variable="mes.times")
+                               fu_measure="measure", fu_time_original="mes.times",                                        
+                               fu_time_variable="mes.times")
 ```
 The point estimation could be found as a file called jmfhc_estresult.rds.
 
