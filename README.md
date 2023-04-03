@@ -56,12 +56,11 @@ The time unit for the time related variables is month.
 We call the function *jmfhc_point_est* for point estimation from the R package cxie19/jmfhc, and the following command is used.
 
 ```{r}
-result_coef <- jmfhc_point_est(data=jmfhc_dat, 
-                               event_time="event.time", event_status="event", 
-                               id="patient.id", 
-                               beta_variable="trt", gamma_variable="trt", 
-                               fu_measure="measure", fu_time_original="mes.times",                                        
-                               fu_time_variable="mes.times")
+result_coef <- jmfhc_point_est(data=jmfhc_dat, event_time="event.time", event_status="event",
+                               id="patient.id", beta_variable="trt", gamma_variable="trt",
+                               fu_measure_original="measure",fu_measure="measure",
+                               fu_time_original="mes.times",fu_time_fixed_variable="mes.times",
+                               fu_time_random_variable="mes.times")
 ```
 The point estimation could be found as a file called jmfhc_estresult.rds.
 
@@ -80,30 +79,59 @@ predict_surv_all <- est_con_survival(L=10,t_hor=5,predict.id="all",AUC=TRUE,Brie
 ```
 
 Our functions *est_cure_L* and *est_con_survival* can also predict the conditional cure rate and conditional survival probability for a specific patient
-who is still at risk at the landmark time 10 months.
+who is still at risk at the landmark time 10 months. We make the prediction on patient with ID=3.
 
 ```{r}
 predict_cure_one <- est_cure_L(L=10,predict.id="one",predict.id.one=3,object=result_jmfhc)
 predict_surv_one <- est_con_survival(L=10,t_hor=5,predict.id="one",predict.id.one=3,AUC=FALSE,Brier=FALSE,object=result_jmfhc)
 ```
 
-In addition, we can predict the conditional cure rate and conditional survival probability for a new patient.
+We plot this patient's observed biomarker measurements up to the landmark time 10 months and the predicted individual  conditional probability function at 10 months. 
+
+```{r}
+png("plot_one_example.png",width = 600, height = 450)
+plot_con_surv(L=10,predict.id="one",predict.id.one=3,biomarker_form="original",object=result_jmfhc)
+dev.off()
+```
+
+![](plot_one_example.png)
+
+In addition, we predict the conditional cure rate at 10 months and conditional survival probability for another 5 months at 10 months for a new patient who is still risk free at 10 months.
 
 ```{r}
 predict_cure_new <- est_cure_L(L=10,predict.id="new",
-                           new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-                           new.fu_time_variable= 0:10,
-                           new.baseline_value_lmm=NULL,
-                           new.z_value=0,
-                           new.x_value=0,
-                           object=result_jmfhc)
+                               new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+                               new.fu_time_fixed_variable= 0:10,
+                               new.fu_time_random_variable= 0:10,
+                               new.baseline_value_lmm=NULL,
+                               new.z_value=0,
+                               new.x_value=0,
+                               object=result_jmfhc)
 predict_surv_new <- est_con_survival(L=10,t_hor=5,predict.id="new",
-                                 new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-                                 new.fu_time_variable= 0:10,
-                                 new.baseline_value_lmm=NULL,
-                                 new.z_value=0,
-                                 new.x_value=0,
-                                 AUC=FALSE,Brier=FALSE,
-                                 object=result_jmfhc)
+                                     new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+                                     new.fu_time_fixed_variable= 0:10,
+                                     new.fu_time_random_variable= 0:10,
+                                     new.baseline_value_lmm=NULL,
+                                     new.z_value=0,
+                                     new.x_value=0,
+                                     AUC=FALSE,Brier=FALSE,
+                                     object=result_jmfhc)
 ```
 
+We also plot this predicted patient's observed biomarker values up to 10 months and the predicted individual survival function at 10 months.
+```{r}
+png("plot_new_example.png",width = 600, height = 450)
+plot_con_surv(L=10,predict.id="new",biomarker="original",
+              new.fu_measure_original=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+              new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
+              new.fu_time_original= 0:10,
+              new.fu_time_fixed_variable= 0:10,
+              new.fu_time_random_variable= 0:10,
+              new.baseline_value_lmm=NULL,
+              new.z_value=0,
+              new.x_value=0,
+              object=result_jmfhc)
+dev.off()
+```
+
+![](plot_new_example.png)

@@ -2,6 +2,7 @@
 
 export(est_con_survival)
 export(est_cure_L)
+export(plot_con_surv)
 import(R.utils)
 import(cubature)
 import(doSNOW)

@@ -10,7 +10,8 @@ est_con_survival(
   predict.id,
   predict.id.one,
   new.fu_measure = NULL,
-  new.fu_time_variable = NULL,
+  new.fu_time_fixed_variable = NULL,
+  new.fu_time_random_variable = NULL,
   new.baseline_value_lmm = NULL,
   new.z_value = NULL,
   new.x_value = NULL,
@@ -32,7 +33,8 @@ predict.id="all" is to do prediction for all patients who are still at risk at t
 predict.id="one" is to do prediction for a specific patient who is still at risk at landmark time \eqn{L} in the data set, where the
 patient id is specified in the parameter predict.id.one.
 predict.id="new" is to do prediction for a new patient who is not in the data set and at risk at landmark time \eqn{L}. This new
-patient's new values are specified in the parameters new.fu_measure, new.fu_time_variable, new.baseline_value_lmm, new.z_value and new.x_value.}
+patient's new values are specified in the parameters new.fu_measure, new.fu_time_fixed_variable, new.fu_time_random_variable,
+new.baseline_value_lmm, new.z_value and new.x_value.}
 
 \item{predict.id.one}{a patient's id number from the data set when predict.id="one",
 which could be numeric and character depending on the form of patient id column in the data set. By default predict.id.one = NULL.}
@@ -41,10 +43,15 @@ which could be numeric and character depending on the form of patient id column 
 in the same form specified for the parameter fu_measure in the fitted longitudinal submodel of jmfhc_point_est().
 By default new.fu_measure = NULL.}
 
-\item{new.fu_time_variable}{a vector of the new patient's measurement time points in the forms specified for the parameter
-fu_time_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_variable is more than one variable,
-the elements in new.fu_time_variable is placed in the order of variables in the fu_time_variable.
-By default new.fu_time_variable = NULL.}
+\item{new.fu_time_fixed_variable}{a vector of the new patient's measurement time points in the forms specified for the parameter
+fu_time_fixed_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_fixed_variable is more than one variable,
+the elements in new.fu_time_fixed_variable is placed in the order of variables in the fu_time_fixed_variable.
+By default new.fu_time_fixed_variable = NULL.}
+
+\item{new.fu_time_random_variable}{a vector of the new patient's measurement time points in the forms specified for the parameter
+fu_time_random_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_random_variable is more than one variable,
+the elements in new.fu_time_random_variable is placed in the order of variables in the fu_time_random_variable.
+By default new.fu_time_random_variable = NULL.}
 
 \item{new.baseline_value_lmm}{value(s) of the baseline covariate(s) in the order specified for the parameter baseline_var_lmm in the fitted
 longitudinal submodel of jmfhc_point_est() when predict.id="new". When the baseline_var_lmm=NULL in jmfhc_point_est(), new.baseline_value_lmm
@@ -84,16 +91,17 @@ time \eqn{L} and evaluates the fitted joint cure model's predictive performance 
 area under the curve (AUC) of the receiver operating characteristic (ROC) and Brier score.
 }
 \examples{
-result_jmfhc <- jmfhc::jmfhc_point_est(data=longdat,
-                               event_time="event.time", event_status="event",
-                               id="patient.id",beta_variable="trt", gamma_variable="trt",
-                               fu_measure="measure", fu_time_original="mes.times",
-                               fu_time_variable="mes.times")
+result_jmfhc <- jmfhc::jmfhc_point_est(data=jmfhc_dat, event_time="event.time", event_status="event",
+                                       id="patient.id", beta_variable="trt", gamma_variable="trt",
+                                       fu_measure_original="measure",fu_measure="measure",
+                                       fu_time_original="mes.times",fu_time_fixed_variable="mes.times",
+                                       fu_time_random_variable="mes.times")
 predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="all",AUC=TRUE,Brier=TRUE,object=result_jmfhc)
 predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="one",predict.id.one=3,AUC=FALSE,Brier=FALSE,object=result_jmfhc)
 predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="new",
                       new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-                      new.fu_time_variable= 0:10,
+                      new.fu_time_fixed_variable= 0:10,
+                      new.fu_time_random_variable= 0:10,
                       new.baseline_value_lmm=NULL,
                       new.z_value=0,
                       new.x_value=0,

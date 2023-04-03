@@ -13,16 +13,21 @@
 #' predict.id="one" is to do prediction for a specific patient who is still at risk at landmark time \eqn{L} in the data set, where the
 #' patient id is specified in the parameter predict.id.one.
 #' predict.id="new" is to do prediction for a new patient who is not in the data set and at risk at landmark time \eqn{L}. This new
-#' patient's new values are specified in the parameters new.fu_measure, new.fu_time_variable, new.baseline_value_lmm, new.z_value and new.x_value.
+#' patient's new values are specified in the parameters new.fu_measure, new.fu_time_fixed_variable, new.fu_time_random_variable,
+#' new.baseline_value_lmm, new.z_value and new.x_value.
 #' @param predict.id.one a patient's id number from the data set when predict.id="one",
 #' which could be numeric and character depending on the form of patient id column in the data set. By default predict.id.one = NULL.
 #' @param new.fu_measure a vector of the new patient's biomarker measurements up to time \eqn{L} when predict.id="new". All measurements are
 #' in the same form specified for the parameter fu_measure in the fitted longitudinal submodel of jmfhc_point_est().
 #' By default new.fu_measure = NULL.
-#' @param new.fu_time_variable a vector of the new patient's measurement time points in the forms specified for the parameter
-#' fu_time_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_variable is more than one variable,
-#' the elements in new.fu_time_variable is placed in the order of variables in the fu_time_variable.
-#' By default new.fu_time_variable = NULL.
+#' @param new.fu_time_fixed_variable a vector of the new patient's measurement time points in the forms specified for the parameter
+#' fu_time_fixed_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_fixed_variable is more than one variable,
+#' the elements in new.fu_time_fixed_variable is placed in the order of variables in the fu_time_fixed_variable.
+#' By default new.fu_time_fixed_variable = NULL.
+#' @param new.fu_time_random_variable a vector of the new patient's measurement time points in the forms specified for the parameter
+#' fu_time_random_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_random_variable is more than one variable,
+#' the elements in new.fu_time_random_variable is placed in the order of variables in the fu_time_random_variable.
+#' By default new.fu_time_random_variable = NULL.
 #' @param new.baseline_value_lmm value(s) of the baseline covariate(s) in the order specified for the parameter baseline_var_lmm in the fitted
 #' longitudinal submodel of jmfhc_point_est() when predict.id="new". When the baseline_var_lmm=NULL in jmfhc_point_est(), new.baseline_value_lmm
 #' can be set as NULL. By default new.baseline_value_lmm = NULL.
@@ -49,16 +54,17 @@
 #' @export
 #'
 #' @examples
-#' result_jmfhc <- jmfhc::jmfhc_point_est(data=longdat,
-#'                                event_time="event.time", event_status="event",
-#'                                id="patient.id",beta_variable="trt", gamma_variable="trt",
-#'                                fu_measure="measure", fu_time_original="mes.times",
-#'                                fu_time_variable="mes.times")
+#' result_jmfhc <- jmfhc::jmfhc_point_est(data=jmfhc_dat, event_time="event.time", event_status="event",
+#'                                        id="patient.id", beta_variable="trt", gamma_variable="trt",
+#'                                        fu_measure_original="measure",fu_measure="measure",
+#'                                        fu_time_original="mes.times",fu_time_fixed_variable="mes.times",
+#'                                        fu_time_random_variable="mes.times")
 #' predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="all",AUC=TRUE,Brier=TRUE,object=result_jmfhc)
 #' predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="one",predict.id.one=3,AUC=FALSE,Brier=FALSE,object=result_jmfhc)
 #' predict_surv <- est_con_survival(L=10,t_hor=5,predict.id="new",
 #'                       new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-#'                       new.fu_time_variable= 0:10,
+#'                       new.fu_time_fixed_variable= 0:10,
+#'                       new.fu_time_random_variable= 0:10,
 #'                       new.baseline_value_lmm=NULL,
 #'                       new.z_value=0,
 #'                       new.x_value=0,
@@ -81,7 +87,8 @@ est_con_survival <- function(L,
                              predict.id,
                              predict.id.one,
                              new.fu_measure=NULL,
-                             new.fu_time_variable=NULL,
+                             new.fu_time_fixed_variable=NULL,
+                             new.fu_time_random_variable=NULL,
                              new.baseline_value_lmm=NULL,
                              new.z_value=NULL,
                              new.x_value=NULL,
@@ -96,7 +103,8 @@ est_con_survival <- function(L,
   measure_time <- object$setting$fu_time_original
   id <- object$setting$id
   fu_measure <- object$setting$fu_measure
-  fu_time_variable <- object$setting$fu_time_variable
+  fu_time_fixed_variable <- object$setting$fu_time_fixed_variable
+  fu_time_random_variable <- object$setting$fu_time_random_variable
   baseline_var_lmm <- object$setting$baseline_var_lmm
   beta_variable <- object$setting$beta_variable
   gamma_variable <- object$setting$gamma_variable
@@ -139,8 +147,8 @@ est_con_survival <- function(L,
       # G(b_i(L))
       fixed_effects <- matrix(est[,which(grepl("fixed_",colnames(est)))],ncol=1)
       if (is.null(baseline_var_lmm)){
-        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=length_random_var)%*%X
-      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable],ind_dat[,baseline_var_lmm]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=length_random_var)%*%X}
+        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X
+      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],ind_dat[,baseline_var_lmm]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X}
       ind_dat$diff_Y <- ind_dat[,fu_measure]-ind_dat$true_Y
       G_b <- prod(exp(-ind_dat$diff_Y^2/(2*est[1,"error_sd"])))
 
@@ -167,8 +175,8 @@ est_con_survival <- function(L,
       # G(b_i(L))
       fixed_effects <- matrix(est[,which(grepl("fixed_",colnames(est)))],ncol=1)
       if (is.null(baseline_var_lmm)){
-        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=length_random_var)%*%X
-      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable],ind_dat[,baseline_var_lmm]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_variable]),ncol=length_random_var)%*%X}
+        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X
+      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],ind_dat[,baseline_var_lmm]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X}
       ind_dat$diff_Y <- ind_dat[,fu_measure]-ind_dat$true_Y
       G_b <- prod(exp(-ind_dat$diff_Y^2/(2*est[1,"error_sd"])))
 
@@ -359,10 +367,10 @@ est_con_survival <- function(L,
     }
 
   } else if (predict.id=="new"){
-    new.fu.matrix <- matrix(c(new.fu_measure,new.fu_time_variable),ncol=1+length(fu_time_variable))
+    new.fu.matrix <- matrix(c(new.fu_measure,new.fu_time_fixed_variable,new.fu_time_random_variable),ncol=1+length(fu_time_fixed_variable)+length(fu_time_random_variable))
     new.baseline.matrix <- matrix(c(new.baseline_value_lmm,new.z_value,new.x_value),ncol=length(c(new.baseline_value_lmm,new.z_value,new.x_value)),nrow=nrow(new.fu.matrix))
     new.variable <- cbind(new.fu.matrix,new.baseline.matrix)
-    colnames(new.variable) <- c(fu_measure,fu_time_variable,baseline_var_lmm,beta_variable,gamma_variable)
+    colnames(new.variable) <- c(fu_measure,fu_time_fixed_variable,fu_time_random_variable,baseline_var_lmm,beta_variable,gamma_variable)
     if(sum(duplicated(colnames(new.variable)))!=0){
       ind_dat <- as.data.frame(new.variable[,-which(duplicated(colnames(new.variable)))])
     }else{
