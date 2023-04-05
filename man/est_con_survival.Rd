@@ -8,7 +8,7 @@ est_con_survival(
   L,
   t_hor,
   predict.id,
-  predict.id.one,
+  predict.id.one = NULL,
   new.fu_measure = NULL,
   new.fu_time_fixed_variable = NULL,
   new.fu_time_random_variable = NULL,
