@@ -55,13 +55,6 @@ ui <- fluidPage(
       uiOutput("predict.new")
     ),
 
-    # only show this panel if plot==TRUE.
-    conditionalPanel(
-      condition = "input.plot==TRUE",
-      uiOutput("plot.biovalue")
-    ),
-
-
     # Display
     mainPanel(
       textOutput("resultlabel"),
@@ -125,13 +118,6 @@ server <- function(input, output) {
     }
   })
 
-  output$plot.biovalue <- renderUI({
-    req(input$plot)
-    if(input$plot==TRUE){
-      checkboxInput("plot.biovalue","Set the original form of measurement values as the y-axis?",value=TRUE)
-    }
-  })
-
   output$predict.new <- renderUI({
     req(object$dat_baseline,input$predict.id)
     if (input$predict.id==2){
@@ -147,15 +133,15 @@ server <- function(input, output) {
   output$resultlabel <- renderText({
     if (input$predict.id==1){
       if (input$predict.item==1){
-        paste("The result of prediction for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark)
+        paste("Predicted conditional cure probability for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark)
       }else if (input$predict.item==2){
-        paste("The result of prediction for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
+        paste("Predicted conditional survival probability for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
       }
     }else if (input$predict.id==2){
       if (input$predict.item==1){
-        paste("The result of prediction for the new patient at landmark time =", input$slider_landmark)
+        paste("Predicted conditional cure probability for the new patient at landmark time =", input$slider_landmark)
       }else if (input$predict.item==2){
-        paste("The result of prediction for the new patient at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
+        paste("Predicted conditional survival probability for the new patient at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
       }
     }
   })
@@ -220,18 +206,14 @@ server <- function(input, output) {
   },digits=4)
 
   output$predict_plot <- renderPlot({
-    req(input$file,input$predict.item,input$predict.id,input$slider_landmark,input$plot,input$plot.biovalue)
+    req(input$file,input$predict.item,input$predict.id,input$slider_landmark,input$plot)
     file <- readRDS(input$file$datapath)
     if (input$plot==TRUE){
       if (input$predict.id==1){
         req(input$predict.id.one)
-        if (input$plot.biovalue==TRUE){
+
           plot_con_surv(L=input$slider_landmark,predict.id="one",predict.id.one=input$predict.id.one,
                         biomarker_form="original",object=file)
-        }else{
-          plot_con_surv(L=input$slider_landmark,predict.id="one",predict.id.one=input$predict.id.one,
-                        biomarker_form="transformed",object=file)
-        }
       }else if(input$predict.id==2){
           req(input$predict.new)
           newpatient_to_read <- input$predict.new
@@ -253,7 +235,6 @@ server <- function(input, output) {
             x_value <- newpatient[1,object$setting$gamma_variable]
           }
 
-          if(input$plot.biovalue==TRUE){
             plot_con_surv(L=input$slider_landmark,predict.id="new",
                           biomarker_form="original",
                           new.fu_measure_original=fu_measure_original,
@@ -265,19 +246,6 @@ server <- function(input, output) {
                           new.z_value=z_value,
                           new.x_value=x_value,
                           object=file)
-          }else {
-            plot_con_surv(L=input$slider_landmark,predict.id="new",
-                          biomarker_form="original",
-                          new.fu_measure_original=fu_measure_original,
-                          new.fu_measure=fu_measure,
-                          new.fu_time_original=fu_time_original,
-                          new.fu_time_fixed_variable=fu_time_fixed_variable,
-                          new.fu_time_random_variable=fu_time_random_variable,
-                          new.baseline_value_lmm=baseline_var_lmm,
-                          new.z_value=z_value,
-                          new.x_value=x_value,
-                          object=file)
-          }
         }
     }
   })

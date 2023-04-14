@@ -66,6 +66,7 @@
 #' @import parallel
 #' @import foreach
 #' @import doSNOW
+#'
 plot_con_surv <- function(L,
                           predict.id,
                           predict.id.one=NULL,
@@ -126,12 +127,13 @@ plot_con_surv <- function(L,
     par(mar = oldmar)
   }
 
-
   # variables in the data set
   event_time <- object$setting$event_time
+  event_status <- object$setting$event_status
   measure_time <- object$setting$fu_time_original
   id <- object$setting$id
   updated_dat <- object$dat_long
+  base_dat <- object$dat_baseline
   # the data set containing patients who are still at risk at the landmark time
   landmark_dat <- updated_dat[updated_dat[,event_time]>= L & updated_dat[,measure_time] <= L,]
 
@@ -160,7 +162,10 @@ plot_con_surv <- function(L,
     bio_label <- "Transformed biomarker value"
   }
 
-  select.time <- seq(L,max(updated_dat[,event_time])+0.1,by=0.1)
+  base_dat <- base_dat[order(base_dat[,event_time]),]
+  # remove event times with duplicated F_0(t)
+  unique.event_time <- base_dat[!duplicated(base_dat$base_cdf),event_time]
+  select.time <- c(quantile(unique.event_time[unique.event_time>L], probs = seq(0, 1, by = .1)),max(base_dat[,"event.time"]))
   # conditional survival probabilities starting from L
   cl <- makeCluster(no_cores)
   registerDoSNOW(cl)
@@ -195,9 +200,9 @@ plot_con_surv <- function(L,
     biomarker <- data.frame(bio_value=biomarker_value,time=new.fu_time_original)
   }
 
-  return(twoord.stackplot(lx=biomarker$time,rx=select.time,
+  return(twoord.stackplot(lx=biomarker$time,rx=c(L,select.time),
                           ldata=biomarker$bio_value,lylimits=biomarker_range,
-                          rdata=ind_con_surv,
+                          rdata=c(1,ind_con_surv),
                           lcol="black",
                           rcol="black",
                           ltype="b", rtype="l",
