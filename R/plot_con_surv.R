@@ -165,33 +165,39 @@ plot_con_surv <- function(L,
   base_dat <- base_dat[order(base_dat[,event_time]),]
   # remove event times with duplicated F_0(t)
   unique.event_time <- base_dat[!duplicated(base_dat$base_cdf),event_time]
-  select.time <- c(quantile(unique.event_time[unique.event_time>L], probs = seq(0, 1, by = .1)),max(base_dat[,"event.time"]))
-  # conditional survival probabilities starting from L
-  cl <- makeCluster(no_cores)
-  registerDoSNOW(cl)
-  if (predict.id=="one"){
-    ind_con_surv <-foreach(thor.time=select.time,.combine="c",.packages=c("cubature","R.utils"),.export= "est_con_survival")%dopar%{
-      prob <- est_con_survival(L=L,t_hor=thor.time-L,predict.id="one",predict.id.one=predict.id.one,object=object)
-      print(thor.time)
-      print(prob)
-      return(prob$con_surv[1,2])
+  if (L < max(unique.event_time)){
+    select.time <- c(quantile(unique.event_time[unique.event_time>L], probs = seq(0, 1, by = .1)))
+
+    # conditional survival probabilities starting from L
+    cl <- makeCluster(no_cores)
+    registerDoSNOW(cl)
+    if (predict.id=="one"){
+      ind_con_surv <-foreach(thor.time=select.time,.combine="c",.packages=c("cubature","R.utils"),.export= "est_con_survival")%dopar%{
+        prob <- est_con_survival(L=L,t_hor=thor.time-L,predict.id="one",predict.id.one=predict.id.one,object=object)
+        print(thor.time)
+        print(prob)
+        return(prob$con_surv[1,2])
+      }
+    }else{
+      ind_con_surv <-foreach(thor.time=select.time,.combine="c",.packages=c("cubature","R.utils"),.export= "est_con_survival")%dopar%{
+        prob <- est_con_survival(L=L,t_hor=thor.time-L,predict.id="new",
+                                 new.fu_measure=new.fu_measure,
+                                 new.fu_time_fixed_variable=new.fu_time_fixed_variable,
+                                 new.fu_time_random_variable=new.fu_time_random_variable,
+                                 new.baseline_value_lmm=new.baseline_value_lmm,
+                                 new.z_value=new.z_value,
+                                 new.x_value=new.x_value,
+                                 object=object)
+        print(thor.time)
+        print(prob)
+        return(prob$con_surv[1,2])
+      }
     }
+    stopCluster(cl)
   }else{
-    ind_con_surv <-foreach(thor.time=select.time,.combine="c",.packages=c("cubature","R.utils"),.export= "est_con_survival")%dopar%{
-      prob <- est_con_survival(L=L,t_hor=thor.time-L,predict.id="new",
-                               new.fu_measure=new.fu_measure,
-                               new.fu_time_fixed_variable=new.fu_time_fixed_variable,
-                               new.fu_time_random_variable=new.fu_time_random_variable,
-                               new.baseline_value_lmm=new.baseline_value_lmm,
-                               new.z_value=new.z_value,
-                               new.x_value=new.x_value,
-                               object=object)
-      print(thor.time)
-      print(prob)
-      return(prob$con_surv[1,2])
-    }
+    select.time <- L
+    ind_con_surv <- 1
   }
-  stopCluster(cl)
 
   if(predict.id=="one"){
     biomarker <- updated_dat[updated_dat[,id]==predict.id.one & updated_dat[,measure_time]<=L,c(biomarker_value,measure_time)]
@@ -200,9 +206,9 @@ plot_con_surv <- function(L,
     biomarker <- data.frame(bio_value=biomarker_value,time=new.fu_time_original)
   }
 
-  return(twoord.stackplot(lx=biomarker$time,rx=c(L,select.time),
+  return(twoord.stackplot(lx=biomarker$time,rx=c(L,select.time,max(base_dat[,"event.time"])),
                           ldata=biomarker$bio_value,lylimits=biomarker_range,
-                          rdata=c(1,ind_con_surv),
+                          rdata=c(1,ind_con_surv,ind_con_surv[length(ind_con_surv)]),
                           lcol="black",
                           rcol="black",
                           ltype="b", rtype="l",

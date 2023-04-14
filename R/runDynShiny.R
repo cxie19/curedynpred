@@ -1,4 +1,4 @@
-#' Shiny Web App for indiviudal dynamic prediction
+#' Initiate the Shiny Web App for individual dynamic prediction
 #'
 #' @return predicted values
 #' @export

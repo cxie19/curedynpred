@@ -2,7 +2,7 @@
 % Please edit documentation in R/runDynShiny.R
 \name{runDynPred}
 \alias{runDynPred}
-\title{Shiny Web App for indiviudal dynamic prediction}
+\title{Initiate the Shiny Web App for individual dynamic prediction}
 \usage{
 runDynPred()
 }
@@ -10,7 +10,7 @@ runDynPred()
 predicted values
 }
 \description{
-Shiny Web App for indiviudal dynamic prediction
+Initiate the Shiny Web App for individual dynamic prediction
 }
 \examples{
 runDynPred()

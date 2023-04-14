@@ -206,7 +206,7 @@ server <- function(input, output) {
   },digits=4)
 
   output$predict_plot <- renderPlot({
-    req(input$file,input$predict.item,input$predict.id,input$slider_landmark,input$plot)
+    req(input$file,input$predict.id,input$slider_landmark,input$plot)
     file <- readRDS(input$file$datapath)
     if (input$plot==TRUE){
       if (input$predict.id==1){
