@@ -14,7 +14,7 @@ library(curedynpred)
 ui <- fluidPage(
 
   titlePanel("Individual Dynamic Prediction for Cure and Survival Based on Longitudinal Data"),
-
+  #sidebarLayout(
     sidebarPanel(
 
       # import the rds file
@@ -40,20 +40,20 @@ ui <- fluidPage(
 
       checkboxInput("plot","Plot observed longitudinal measurements and individual conditional survival function?"),
 
+      # only show this panel if predict.item==2. create a slider for time horizon of prediction
+      conditionalPanel(
+        condition = "input.predict.item==2",
+        uiOutput("slider_t_hor"),
+      ),
+
+      # only show this panel if predict.id==1. select a patient id from a select box
+      conditionalPanel(
+        condition = "input.predict.id==1",
+        uiOutput("predict.id.one"),
+        uiOutput("predict.new")
+      )
     ),
 
-    # only show this panel if predict.item==2. create a slider for time horizon of prediction
-    conditionalPanel(
-      condition = "input.predict.item==2",
-      uiOutput("slider_t_hor"),
-    ),
-
-    # only show this panel if predict.id==1. select a patient id from a select box
-    conditionalPanel(
-      condition = "input.predict.id==1",
-      uiOutput("predict.id.one"),
-      uiOutput("predict.new")
-    ),
 
     # Display
     mainPanel(
@@ -61,7 +61,7 @@ ui <- fluidPage(
       tableOutput("predict_table"),
       plotOutput("predict_plot")
     )
-
+  #)
 )
 
 

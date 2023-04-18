@@ -28,7 +28,7 @@ seen by using the following command.
 help(longdat)
 ```
 
-The function *est_cure_L* is called to predicts individual conditional probability of being cured at a landmark time.
+The function *est_cure_L* is called to predict individual conditional probability of being cured at a landmark time.
 Its documentation can be seen by using the following command.
 
 ```{r}
@@ -44,6 +44,16 @@ Its documentation can be seen by using the following command.
 ```{r}
 help(est_con_survival)
 ```
+
+The function *runDynShiny* is called to initiate the R Shiny Web App. It can predict conditional 
+cure probability and conditional survival probability of an existing patient in the data set or a 
+new patient.
+Its documentation can be seen by using the following command.
+
+```{r}
+help(runDynShiny)
+```
+
 
 ## Example
 For example, we want to fit a JMFHC for the example data *long_dat*.
