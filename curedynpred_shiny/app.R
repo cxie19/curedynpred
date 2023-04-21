@@ -23,9 +23,6 @@ ui <- fluidPage(
 
       tags$hr(),
 
-      # set the landmark time with a slider
-      uiOutput("slider_landmark"),
-
       # select patients for prediction
       radioButtons("predict.id", label = "Perform prediction on:",
                    choices = list("A specifc at-risk patient from the data set" = 1,
@@ -34,16 +31,19 @@ ui <- fluidPage(
 
       # select the item to predict
       radioButtons("predict.item", "What to predict",
-                   choices = list("Indivudal conditional cure rate" = 1,
+                   choices = list("Indivudal conditional cure probability" = 1,
                                   "Individual conditional survival probability" = 2),
                    selected = 1),
 
-      checkboxInput("plot","Plot observed longitudinal measurements and individual conditional survival function?"),
+      # set the landmark time with a slider
+      uiOutput("numeric_landmark"),
+
+      checkboxInput("plot","Plot observed biomarker measurements and individual conditional survival function?",value=FALSE),
 
       # only show this panel if predict.item==2. create a slider for time horizon of prediction
       conditionalPanel(
         condition = "input.predict.item==2",
-        uiOutput("slider_t_hor"),
+        uiOutput("numeric_t_hor"),
       ),
 
       # only show this panel if predict.id==1. select a patient id from a select box
@@ -51,7 +51,13 @@ ui <- fluidPage(
         condition = "input.predict.id==1",
         uiOutput("predict.id.one"),
         uiOutput("predict.new")
-      )
+      ),
+
+      # action button for prediction
+      actionButton(
+        inputId = "action_pred",
+        label = "Start"),
+
     ),
 
 
@@ -78,22 +84,24 @@ server <- function(input, output) {
     object$setting <- readRDS(file_to_read$datapath)$setting
   })
 
-  output$slider_landmark <- renderUI({
+  output$numeric_landmark <- renderUI({
     req(object$dat_baseline)
     min_event_time <- round(range(object$dat_baseline$event.time)[1])
     max_event_time <-  round(range(object$dat_baseline$event.time)[2])
-    sliderInput("slider_landmark", "Set a landmark time for prediction:",
+    numericInput("numeric_landmark",
+                label=paste("Set a landmark time for prediction","(a value from",min_event_time,"to",max_event_time,"):"),
                 min = min_event_time,
-                max = max_event_time, value = min_event_time, step = 1)
+                max = max_event_time, value = NULL)
   })
 
-  output$slider_t_hor <- renderUI({
-    req(object$dat_baseline,input$predict.item)
+  output$numeric_t_hor <- renderUI({
+    req(object$dat_baseline,input$predict.item,input$numeric_landmark)
     if (input$predict.item==2){
-      half_event_time <-  round(range(object$dat_baseline$event.time)[2]/2)
-      sliderInput("slider_t_hor", "Set a time horizon for prediction:",
+      poss_time <-  round(range(object$dat_baseline$event.time)[2]-input$numeric_landmark)
+      numericInput("numeric_t_hor",
+                   label=paste("Set a time horizon for prediction","(a value from 0 to",poss_time,"):"),
                   min = 0,
-                  max = half_event_time, value = 0, step = 0.5)
+                  max = poss_time, value = NULL, step = 0.5)
     }
   })
 
@@ -110,16 +118,16 @@ server <- function(input, output) {
   })
 
   output$predict.id.one <- renderUI({
-    req(object$dat_baseline,input$predict.id)
-    if(input$predict.id==1){
-      unique.id <- unique(object$dat_baseline[object$dat_baseline[,"event.time"]> input$slider_landmark,"patient.id"])
+    req(object$dat_baseline,input$predict.id,input$numeric_landmark)
+    if(input$predict.id==1 && !is.null(input$numeric_landmark)){
+      unique.id <- unique(object$dat_baseline[object$dat_baseline[,"event.time"]> input$numeric_landmark,"patient.id"])
       selectInput("predict.id.one", "Select one at-risk patient's ID from the data set",
-                  choices = unique.id)
+                  choices = unique.id,selected = NULL)
     }
   })
 
   output$predict.new <- renderUI({
-    req(object$dat_baseline,input$predict.id)
+    req(input$predict.id)
     if (input$predict.id==2){
       fileInput("predict.new",
                 paste("Upload the new patient's records up to the landmark time in the long format via CSV File including variables","[",require.var(),"]."),
@@ -130,32 +138,36 @@ server <- function(input, output) {
     }
   })
 
-  output$resultlabel <- renderText({
+  desbText <- eventReactive(input$action_pred, {
     if (input$predict.id==1){
       if (input$predict.item==1){
-        paste("Predicted conditional cure probability for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark)
+        paste0("For patient ID = ",input$predict.id.one,", the predicted chance of being cured at landmark time = ", input$numeric_landmark,":")
       }else if (input$predict.item==2){
-        paste("Predicted conditional survival probability for patient ID =",input$predict.id.one,"at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
+        paste0("For patient ID = ",input$predict.id.one, ", the predicted probability for being risk-free for an additional time ",input$numeric_landmark, " at landmark time = ", input$numeric_t_hor,":")
       }
     }else if (input$predict.id==2){
       if (input$predict.item==1){
-        paste("Predicted conditional cure probability for the new patient at landmark time =", input$slider_landmark)
+        paste0("For the new patient, the predicted chance of being cured at landmark time = ", input$numeric_landmark,":")
       }else if (input$predict.item==2){
-        paste("Predicted conditional survival probability for the new patient at landmark time =", input$slider_landmark, "with the time horizon of prediction =", input$slider_t_hor)
+        paste0("For the new patient, the predicted probability for being risk-free for an additional time ",input$numeric_landmark, " at landmark time = ", input$numeric_t_hor,":")
       }
     }
   })
 
-  result <- reactive({
-    req(input$file,input$predict.item,input$predict.id,input$slider_landmark)
+  output$resultlabel <- renderText({
+    desbText()
+  })
+
+  result <- eventReactive(input$action_pred, {
+    req(input$file,input$predict.item,input$predict.id,input$numeric_landmark)
     file <- readRDS(input$file$datapath)
     if(input$predict.id==1 && input$predict.item==1){
       req(input$predict.id.one)
-      est_cure_L(L=input$slider_landmark,predict.id="one",predict.id.one=input$predict.id.one,
+      est_cure_L(L=input$numeric_landmark,predict.id="one",predict.id.one=input$predict.id.one,
                  object=file)
     }else if (input$predict.id==1 && input$predict.item==2){
-      req(input$predict.id.one,input$slider_t_hor)
-      est_con_survival(L=input$slider_landmark,t_hor=input$slider_t_hor,predict.id="one",
+      req(input$predict.id.one,input$numeric_t_hor)
+      est_con_survival(L=input$numeric_landmark,t_hor=input$numeric_t_hor,predict.id="one",
                        predict.id.one=input$predict.id.one,
                        object=file)$con_surv
     }
@@ -179,7 +191,7 @@ server <- function(input, output) {
       }
 
       if(input$predict.item==1){
-        est_cure_L(L=input$slider_landmark,predict.id="new",
+        est_cure_L(L=input$numeric_landmark,predict.id="new",
                    new.fu_measure=fu_measure,
                    new.fu_time_fixed_variable=fu_time_fixed_variable,
                    new.fu_time_random_variable=fu_time_random_variable,
@@ -188,8 +200,8 @@ server <- function(input, output) {
                    new.x_value=x_value,
                    object=file)
       }else if (input$predict.item==2){
-        req(input$slider_t_hor)
-        est_con_survival(L=input$slider_landmark,t_hor=input$slider_t_hor,predict.id="new",
+        req(input$numeric_t_hor)
+        est_con_survival(L=input$numeric_landmark,t_hor=input$numeric_t_hor,predict.id="new",
                          new.fu_measure=fu_measure,
                          new.fu_time_fixed_variable=fu_time_fixed_variable,
                          new.fu_time_random_variable=fu_time_random_variable,
@@ -203,16 +215,16 @@ server <- function(input, output) {
 
   output$predict_table <- renderTable({
     result()
-  },digits=4)
+  },digits=3)
 
   output$predict_plot <- renderPlot({
-    req(input$file,input$predict.id,input$slider_landmark,input$plot)
+    req(input$file,input$predict.id,input$numeric_landmark,input$plot)
     file <- readRDS(input$file$datapath)
     if (input$plot==TRUE){
       if (input$predict.id==1){
         req(input$predict.id.one)
 
-          plot_con_surv(L=input$slider_landmark,predict.id="one",predict.id.one=input$predict.id.one,
+          plot_con_surv(L=input$numeric_landmark,predict.id="one",predict.id.one=input$predict.id.one,
                         biomarker_form="original",object=file)
       }else if(input$predict.id==2){
           req(input$predict.new)
@@ -235,7 +247,7 @@ server <- function(input, output) {
             x_value <- newpatient[1,object$setting$gamma_variable]
           }
 
-            plot_con_surv(L=input$slider_landmark,predict.id="new",
+            plot_con_surv(L=input$numeric_landmark,predict.id="new",
                           biomarker_form="original",
                           new.fu_measure_original=fu_measure_original,
                           new.fu_measure=fu_measure,

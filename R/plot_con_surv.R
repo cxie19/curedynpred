@@ -203,14 +203,14 @@ plot_con_surv <- function(L,
     biomarker <- updated_dat[updated_dat[,id]==predict.id.one & updated_dat[,measure_time]<=L,c(biomarker_value,measure_time)]
     colnames(biomarker) <- c("bio_value","time")
   }else{
-    biomarker <- data.frame(bio_value=biomarker_value,time=new.fu_time_original)
+    biomarker <- data.frame(bio_value=biomarker_value[new.fu_time_original<=L],time=new.fu_time_original[new.fu_time_original<=L])
   }
 
   return(twoord.stackplot(lx=biomarker$time,rx=c(L,select.time,max(base_dat[,"event.time"])),
                           ldata=biomarker$bio_value,lylimits=biomarker_range,
                           rdata=c(1,ind_con_surv,ind_con_surv[length(ind_con_surv)]),
-                          lcol="black",
-                          rcol="black",
+                          lcol="red",
+                          rcol="blue",
                           ltype="b", rtype="l",
                           lylab=bio_label,
                           rylab="Predicted conditional survival probability",
