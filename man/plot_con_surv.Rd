@@ -5,73 +5,25 @@
 \title{Plot a patient's observed biomarker values and predicted conditional survival function}
 \usage{
 plot_con_surv(
-  L,
+  landmark,
   predict.id,
-  predict.id.one = NULL,
-  biomarker_form,
-  new.fu_measure_original = NULL,
-  new.fu_measure = NULL,
-  new.fu_time_original = NULL,
-  new.fu_time_fixed_variable = NULL,
-  new.fu_time_random_variable = NULL,
-  new.baseline_value_lmm = NULL,
-  new.z_value = NULL,
-  new.x_value = NULL,
+  model.type,
   object,
+  original_biomarker_form,
   no_cores = 7
 )
 }
 \arguments{
-\item{L}{a value of the landmark time in the same unit as the observed survival times and the original form of measurement times
-in the data set.}
+\item{landmark}{a value of the landmark time included in the object assigned below.}
 
-\item{predict.id}{a character for the type of prediction. It could be one" or "new".
-predict.id="one" is to do prediction for a specific patient who is still at risk at landmark time \eqn{L} in the data set, where the
-patient id is specified in the parameter predict.id.one.
-predict.id="new" is to do prediction for a new patient who is not in the data set and at risk at landmark time \eqn{L}. This new
-patient's new values are specified in the parameters new.fu_measure, new.fu_time_fixed_variable, new.fu_time_random_variable,
-new.baseline_value_lmm, new.z_value and new.x_value.}
+\item{predict.id}{a subject id who is still risk free at landmark time in the test dataset.}
 
-\item{predict.id.one}{a patient's id number from the data set when predict.id="one",
-which could be numeric and character depending on the form of patient id column in the data set.
-By default predict.id.one = NULL.}
+\item{model.type}{a character for the type of model used for prediction. It could be "joint model" or "landmark model".}
 
-\item{biomarker_form}{a character for the type of biomarker values presented as the y-axis of the plot.
-It could be "original" or "transformed".}
+\item{object}{an object of pred_surv_joint_model() function for JMFHC model or pred_landmark_model() function for the LFHC model.}
 
-\item{new.fu_measure_original}{a vector of the new patient's longitudinal measurement times in the original form.
-When biomarker_form="transformed", new.fu_measure_original can be set as NULL.
-By default new.fu_measure_original = NULL.}
-
-\item{new.fu_measure}{a vector of the new patient's biomarker measurements up to time \eqn{L} when predict.id="new". All measurements are
-in the same form specified for the parameter fu_measure in the fitted longitudinal submodel of jmfhc_point_est().
-By default new.fu_measure = NULL.}
-
-\item{new.fu_time_original}{a vector of the new patient's longitudinal measurement times in the original form, which is in the same
-unit of the landmark time.}
-
-\item{new.fu_time_fixed_variable}{a vector of the new patient's measurement time points in the forms specified for the parameter
-fu_time_fixed_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_fixed_variable is more than one variable,
-the elements in new.fu_time_fixed_variable is placed in the order of variables in the fu_time_fixed_variable.
-By default new.fu_time_fixed_variable = NULL.}
-
-\item{new.fu_time_random_variable}{a vector of the new patient's measurement time points in the forms specified for the parameter
-fu_time_random_variable in the fitted longitudinal submodel of jmfhc_point_est() when predict.id="new". When fu_time_random_variable is more than one variable,
-the elements in new.fu_time_random_variable is placed in the order of variables in the fu_time_random_variable.
-By default new.fu_time_random_variable = NULL.}
-
-\item{new.baseline_value_lmm}{value(s) of the baseline covariate(s) in the order specified for the parameter baseline_var_lmm in the fitted
-longitudinal submodel of jmfhc_point_est() when predict.id="new". When the baseline_var_lmm=NULL in jmfhc_point_est(), new.baseline_value_lmm
-can be set as NULL. By default new.baseline_value_lmm = NULL.}
-
-\item{new.z_value}{value(s) of the long-term baseline covariate(s) in the order specified for the parameter beta_variable in the fitted
-cure submodel of jmfhc_point_est() when predict.id="new". By default new.z_value = NULL.}
-
-\item{new.x_value}{value(s) of the short-term baseline covariate(s) in the order specified for the parameter gamma_variable in the fitted
-cure submodel of jmfhc_point_est() when predict.id="new". When the gamma_variable=NULL in jmfhc_point_est(), new.x_value can be set as NULL.
-By default new.x_value = NULL.}
-
-\item{object}{an object of jmfhc_point_est() function.}
+\item{original_biomarker_form}{a logical value (True or False) to determine whether to use the originial form of biomarker values biomarker values
+presented at the y-axis of the plot.}
 
 \item{no_cores}{the number of cores used during the estimation. The default is 7.}
 }
@@ -83,21 +35,25 @@ Plots a patient's observed biomarker values up to a landmark time \eqn{L} and pr
 individual conditional survival function at \eqn{L}
 }
 \examples{
-result_jmfhc <- jmfhc::jmfhc_point_est(data=jmfhc_dat, event_time="event.time", event_status="event",
-                                       id="patient.id", beta_variable="trt", gamma_variable="trt",
-                                       fu_measure_original="measure",fu_measure="measure",
-                                       fu_time_original="mes.times",fu_time_fixed_variable="mes.times",
-                                       fu_time_random_variable="mes.times")
-plot_con_surv(L=10,predict.id="one",predict.id.one=3,biomarker_form="original",object=result_jmfhc)
-plot_con_surv(L=10,predict.id="new",biomarker="original",
-              new.fu_measure_original=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-              new.fu_measure=c(5.2,5.1,1.6,0.9,-1.1,-2.6,-5.3,-8.0,-7.5,-11,-12),
-              new.fu_time_original= 0:10,
-              new.fu_time_fixed_variable= 0:10,
-              new.fu_time_random_variable= 0:10,
-              new.baseline_value_lmm=NULL,
-              new.z_value=0,
-              new.x_value=0,
-              object=result_jmfhc)
+# Example of JMFHC
+predict_surv_jmfhc  <- pred_surv_joint_model(landmark_surv_vec=c(10,20),
+                                             thor_list=list(c(5,10),c(5,10)),
+                                             object=jmfhc_est,
+                                             test_dat=test_dat,
+                                             no_cores=7)
+plot_con_surv(landmark=10,predict.id=1,model.type="joint model",object=predict_surv_jmfhc,original_biomarker_form=TRUE,no_cores=7)
+
+# Example of the LFHC model
+lfhc_pred_all <- pred_landmark_model(cure_prob=T,landmark_cure_vec=c(10,20),
+                                     surv_prob=T,landmark_surv_vec=c(10,20),
+                                     thor_list=list(c(5,10),c(5,10)),
+                                     train_prep_data=train_dat,test_prep_data=test_dat,
+                                     id="id",event_time="event.time",event_status = "event",
+                                     fu_time_original="measure.time",
+                                     fu_measure_original="measure",fu_measure="measure",
+                                     beta_variable = c("x1","x2"),
+                                     gamma_include_measure=FALSE,
+                                     gamma_variable= c("x1","x2"))
+plot_con_surv(landmark=10,predict.id=1,model.type="landmark model",object=lfhc_pred_all,original_biomarker_form=TRUE,no_cores=7)
 
 }
