@@ -28,13 +28,13 @@ using a joint model with a flexible-hazards cure model for survival data (JMFHC)
 a joint model with a proportional hazards cure model for survival data (JMPHC)
 }
 \examples{
-jmfhc_estresult <- readRDS("jmfhc_estresult.rds")
 jmfhc_est <- jmfhc::jmfhc_point_est(data=train_dat, event_time="event.time", event_status="event",
                                     id="id", beta_variable=c("x1","x2"), gamma_variable=c("x1","x2"),
                                     fu_measure_original="measure",fu_measure="measure",
                                     fu_time_original="measure.time",fu_time_fixed_variable="measure.time",
                                     fu_time_random_variable="measure.time",
                                     baseline_var_lmm=c("x1","x2"),no_cores=7)
+# jmfhc_estresult <- readRDS("jmfhc_estresult.rds")
 predict_cure_jmfhc  <- pred_cure_joint_model(landmark_cure_vec =c(10,20),
                                              object=jmfhc_estresult,
                                              test_dat=test_dat,

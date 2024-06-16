@@ -36,6 +36,7 @@ individual conditional survival function at \eqn{L}
 }
 \examples{
 # Example of JMFHC
+jmfhc_est <- readRDS("jmfhc_estresult.rds")
 predict_surv_jmfhc  <- pred_surv_joint_model(landmark_surv_vec=c(10,20),
                                              thor_list=list(c(5,10),c(5,10)),
                                              object=jmfhc_est,
