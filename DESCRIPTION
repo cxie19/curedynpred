@@ -9,10 +9,7 @@ Author: c(
     person("Ruosha", "Li", email = "ruosha.li@uth.tmc.edu", role = "aut"))
 Maintainer: Can Xie <can.xie@uth.tmc.edu>
 Description: The package predicts individual conditional cure rates and conditional 
-    survival probabilities and also evaluates the fitted joint model's predictive performance 
-    on conditional survival probabilities via the time-dependent area under 
-    the receiver operating characteristic curve (AUC) and Brier score. 
-    The fitted joint model is our proposed joint cure model that simultaneously deals 
+    survival probabilities. The fitted joint model is our proposed joint cure model that simultaneously deals 
     with longitudinal data in a linear mixed-effects submodel 
     and flexible patterns of hazard ratios over time in a promotion time cure submodel.
     The model estimation for this proposed model can be found in the github cxie19/jmfhc.
