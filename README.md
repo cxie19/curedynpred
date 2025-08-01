@@ -100,14 +100,7 @@ predict_surv_jmfhc  <- pred_surv_joint_model(landmark_surv_vec=c(10,20),
 ```
 
 The prediction result could be found as a file called predict_surv_jmfhc.rds.
-We plot the biomarker values and predicted survival function at 10 months for patient with ID=1.
-
-```{r}
-predict_cure_one <- est_cure_L(L=10,predict.id="one",predict.id.one=3,object=result_jmfhc)
-predict_surv_one <- est_con_survival(L=10,t_hor=5,predict.id="one",predict.id.one=3,AUC=FALSE,Brier=FALSE,object=result_jmfhc)
-```
-
-We plot this patient's observed biomarker measurements up to the landmark time 10 months and the predicted individual conditional probability function at 10 months. 
+We plot observed biomarker measurements up to the landmark time 10 months and the predicted individual conditional probability function at 10 months for patient with ID=1.
 
 ```{r}
 png("plot_jmfhc_id1.png",width = 600, height = 450)
