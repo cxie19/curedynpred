@@ -74,8 +74,8 @@ pred_surv_joint_model <- function(landmark_surv_vec,
       # G(b_i(L))
       fixed_effects <- matrix(est[,which(grepl("fixed_",colnames(est)))],ncol=1)
       if (is.null(baseline_var_lmm)){
-        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X
-      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],unlist(ind_dat[,baseline_var_lmm])),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X}
+        ind_dat$true_Y <- matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable])),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable])),ncol=length_random_var)%*%X
+      } else{ind_dat$true_Y <- matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],unlist(ind_dat[,baseline_var_lmm]))),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable])),ncol=length_random_var)%*%X}
       ind_dat$diff_Y <- ind_dat[,fu_measure]-ind_dat$true_Y
       G_b <- prod(exp(-ind_dat$diff_Y^2/(2*est[1,"error_sd"])))
 
@@ -102,8 +102,8 @@ pred_surv_joint_model <- function(landmark_surv_vec,
       # G(b_i(L))
       fixed_effects <- matrix(est[,which(grepl("fixed_",colnames(est)))],ncol=1)
       if (is.null(baseline_var_lmm)){
-        ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable]),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X
-      } else{ind_dat$true_Y <- matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],unlist(ind_dat[,baseline_var_lmm])),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable]),ncol=length_random_var)%*%X}
+        ind_dat$true_Y <- matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable])),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable])),ncol=length_random_var)%*%X
+      } else{ind_dat$true_Y <- matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_fixed_variable],unlist(ind_dat[,baseline_var_lmm]))),ncol=nrow(fixed_effects))%*%fixed_effects+matrix(unlist(c(rep(1,nrow(ind_dat)),ind_dat[,fu_time_random_variable])),ncol=length_random_var)%*%X}
       ind_dat$diff_Y <- ind_dat[,fu_measure]-ind_dat$true_Y
       G_b <- prod(exp(-ind_dat$diff_Y^2/(2*est[1,"error_sd"])))
 
